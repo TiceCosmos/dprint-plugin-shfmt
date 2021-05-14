@@ -140,7 +140,7 @@ jobs:
             Then in your project's *dprint.json*:
 
             1. Specify the plugin url and checksum in the `"plugins"` array.
-            2. Ensure `.toml` file extensions are matched in an `"includes"` pattern.
+            2. Ensure `.sh`, `.bat` file extensions are matched in an "includes" pattern.
             3. Add a `"shfmt"` configuration property if desired.
                ```jsonc
                {
