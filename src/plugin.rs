@@ -1,7 +1,7 @@
 use crate::configuration::{Configuration, LanguageVariant};
 use dprint_core::{
     configuration::{ConfigKeyMap, GlobalConfiguration, ResolveConfigurationResult},
-    plugins::{process::ProcessPluginHandler, PluginInfo},
+    plugins::{PluginHandler, PluginInfo},
     types::ErrBox,
 };
 use std::{ffi::OsString, path::Path};
@@ -21,43 +21,38 @@ impl Default for MyProcessPluginHandler {
     }
 }
 
-impl ProcessPluginHandler<Configuration> for MyProcessPluginHandler {
-    fn get_plugin_info(&self) -> PluginInfo {
+impl PluginHandler<Configuration> for MyProcessPluginHandler {
+    fn get_plugin_info(&mut self) -> PluginInfo {
         PluginInfo {
             name: String::from(env!("CARGO_PKG_NAME")),
             version: String::from(env!("CARGO_PKG_VERSION")),
-            config_key: crate::CONFIG_KEY.into(),
-            file_extensions: crate::FILE_EXTENSIONS
-                .iter()
-                .map(|x| x.to_string())
-                .collect(),
-            help_url: crate::HELP_URL.into(),
-            config_schema_url: crate::CONFIG_SCHEMA_URL.into(),
+            config_key: "shfmt".into(),
+            file_extensions: vec!["sh"].into_iter().map(|x| x.to_string()).collect(),
+            help_url: "https://github.com/mvdan/sh/blob/master/cmd/shfmt/shfmt.1.scd#examples".into(),
+            config_schema_url: "".into(),
         }
     }
 
-    fn get_license_text(&self) -> &str {
-        crate::LICENSE_TEXT
+    fn get_license_text(&mut self) -> String {
+        include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/LICENSE")).into()
     }
 
     fn resolve_config(
-        &self,
+        &mut self,
         config: ConfigKeyMap,
         global_config: &GlobalConfiguration,
     ) -> ResolveConfigurationResult<Configuration> {
-        super::resolve_config(config, global_config)
+        crate::configuration::resolve_config(config, global_config)
     }
 
-    fn format_text<'a>(
-        &'a self,
+    fn format_text(
+        &mut self,
         file_path: &Path,
         file_text: &str,
         config: &Configuration,
-        _format_with_host: Box<
-            dyn FnMut(&Path, String, &ConfigKeyMap) -> Result<String, ErrBox> + 'a,
-        >,
+        mut _format_with_host: impl FnMut(&Path, String, &ConfigKeyMap) -> Result<String, ErrBox>,
     ) -> Result<String, ErrBox> {
-        super::format_text(
+        crate::format_text::format_text(
             &self.shfmt_path,
             file_text,
             config,

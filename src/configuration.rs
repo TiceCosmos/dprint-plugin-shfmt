@@ -188,9 +188,6 @@ mod tests {
         }
 
         let file_path = tempdir.path().join("run.bat");
-        assert_eq!(
-            Some(LanguageVariant::Bats),
-            LanguageVariant::from_path(&file_path)
-        );
+        assert_eq!(Some(LanguageVariant::Bats), LanguageVariant::from_path(&file_path));
     }
 }

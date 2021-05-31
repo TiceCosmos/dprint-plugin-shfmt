@@ -40,9 +40,7 @@ mod tests {
 
     #[test]
     fn format_text() {
-        let shfmt_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("target")
-            .join("shfmt");
+        let shfmt_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("target").join("shfmt");
 
         if !shfmt_path.is_file() {
             return;
