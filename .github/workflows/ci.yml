@@ -38,7 +38,7 @@ jobs:
       - name: Build release
         if: matrix.config.kind == 'test_release'
         run: |
-          cargo build --release --locked --verbose
+          cargo build --release --verbose
 
       # Release
       - name: Pre-release (Linux)
