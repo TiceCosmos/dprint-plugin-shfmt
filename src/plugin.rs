@@ -28,7 +28,8 @@ impl PluginHandler<Configuration> for MyProcessPluginHandler {
             version: String::from(env!("CARGO_PKG_VERSION")),
             config_key: "shfmt".into(),
             file_extensions: vec!["sh"].into_iter().map(|x| x.to_string()).collect(),
-            help_url: "https://github.com/mvdan/sh/blob/master/cmd/shfmt/shfmt.1.scd#examples".into(),
+            file_names: vec![],
+            help_url: "https://github.com/TiceCosmos/dprint-plugin-shfmt".into(),
             config_schema_url: "".into(),
         }
     }

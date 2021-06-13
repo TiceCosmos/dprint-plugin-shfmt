@@ -16,9 +16,9 @@ panic = "abort"
 
 
 [dependencies]
-dprint-core = { version = "0.42", features = ["formatting", "process"] }
+dprint-core = { version = "0.43", features = ["process"] }
 structopt = "0.3"
-strum = { version = "0.20", features = ["derive"] }
+strum = { version = "0.21", features = ["derive"] }
 tempfile = "3.2"
 
 serde = { version = "*", features = ["derive"] }

@@ -1,12 +1,13 @@
 use dprint_core::{
-    configuration::{get_unknown_property_diagnostics, get_value},
-    configuration::{ConfigKeyMap, GlobalConfiguration, ResolveConfigurationResult},
+    configuration::get_unknown_property_diagnostics,
+    configuration::{ConfigKeyMap, ConfigurationDiagnostic, GlobalConfiguration, ResolveConfigurationResult},
 };
 use serde::Serialize;
-use std::path::Path;
+use std::{fmt, path::Path, str::FromStr};
 use strum::AsRefStr;
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Configuration {
     pub indent_width: u8,
     /// like -bn
@@ -98,32 +99,56 @@ pub fn resolve_config(
     config: ConfigKeyMap,
     global_config: &GlobalConfiguration,
 ) -> ResolveConfigurationResult<Configuration> {
-    let mut config = config;
-    let mut diagnostics = Vec::new();
+    let mut builder = ConfigurationBuilder::new(config);
 
-    let resolved_config = Configuration {
-        indent_width: get_value(
-            &mut config,
-            "indent_width",
-            global_config
-                .use_tabs
-                .filter(|use_tabs| !use_tabs)
-                .and(global_config.indent_width)
-                .unwrap_or_default(),
-            &mut diagnostics,
-        ),
-        binary_next_line: get_value(&mut config, "binary_next_line", false, &mut diagnostics),
-        switch_case_indent: get_value(&mut config, "switch_case_indent", false, &mut diagnostics),
-        space_redirects: get_value(&mut config, "space_redirects", false, &mut diagnostics),
-        keep_padding: get_value(&mut config, "keep_padding", false, &mut diagnostics),
-        function_next_line: get_value(&mut config, "function_next_line", false, &mut diagnostics),
-    };
+    let mut config = Configuration::default();
+    if let Some(value) = global_config
+        .use_tabs
+        .filter(|use_tabs| !use_tabs)
+        .and(global_config.indent_width)
+    {
+        config.indent_width = value;
+    }
 
-    diagnostics.extend(get_unknown_property_diagnostics(config));
+    builder.get_nullable_value(&mut config.indent_width, "indentWidth");
+    builder.get_nullable_value(&mut config.binary_next_line, "binaryNextLine");
+    builder.get_nullable_value(&mut config.switch_case_indent, "switchCaseIndent");
+    builder.get_nullable_value(&mut config.space_redirects, "spaceRedirects");
+    builder.get_nullable_value(&mut config.keep_padding, "keepPadding");
+    builder.get_nullable_value(&mut config.function_next_line, "functionNextLine");
 
     ResolveConfigurationResult {
-        config: resolved_config,
-        diagnostics,
+        config,
+        diagnostics: builder.extend(),
+    }
+}
+
+struct ConfigurationBuilder {
+    config: ConfigKeyMap,
+    diagnostics: Vec<ConfigurationDiagnostic>,
+}
+impl ConfigurationBuilder {
+    fn new(config: ConfigKeyMap) -> Self {
+        Self {
+            config,
+            diagnostics: Vec::new(),
+        }
+    }
+    fn extend(self) -> Vec<ConfigurationDiagnostic> {
+        let mut data = self;
+        data.diagnostics.extend(get_unknown_property_diagnostics(data.config));
+        data.diagnostics
+    }
+    fn get_nullable_value<T>(&mut self, store: &mut T, key: &'static str)
+    where
+        T: FromStr,
+        <T as FromStr>::Err: fmt::Display,
+    {
+        if let Some(value) =
+            dprint_core::configuration::get_nullable_value(&mut self.config, key, &mut self.diagnostics)
+        {
+            *store = value;
+        }
     }
 }
 
