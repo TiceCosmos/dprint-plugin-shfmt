@@ -1,6 +1,8 @@
 use dprint_core::{
     configuration::get_unknown_property_diagnostics,
-    configuration::{ConfigKeyMap, ConfigurationDiagnostic, GlobalConfiguration, ResolveConfigurationResult},
+    configuration::{
+        ConfigKeyMap, ConfigurationDiagnostic, GlobalConfiguration, ResolveConfigurationResult,
+    },
 };
 use serde::Serialize;
 use std::{fmt, path::Path, str::FromStr};
@@ -136,7 +138,8 @@ impl ConfigurationBuilder {
     }
     fn extend(self) -> Vec<ConfigurationDiagnostic> {
         let mut data = self;
-        data.diagnostics.extend(get_unknown_property_diagnostics(data.config));
+        data.diagnostics
+            .extend(get_unknown_property_diagnostics(data.config));
         data.diagnostics
     }
     fn get_nullable_value<T>(&mut self, store: &mut T, key: &'static str)
@@ -144,9 +147,11 @@ impl ConfigurationBuilder {
         T: FromStr,
         <T as FromStr>::Err: fmt::Display,
     {
-        if let Some(value) =
-            dprint_core::configuration::get_nullable_value(&mut self.config, key, &mut self.diagnostics)
-        {
+        if let Some(value) = dprint_core::configuration::get_nullable_value(
+            &mut self.config,
+            key,
+            &mut self.diagnostics,
+        ) {
             *store = value;
         }
     }
@@ -213,6 +218,9 @@ mod tests {
         }
 
         let file_path = tempdir.path().join("run.bat");
-        assert_eq!(Some(LanguageVariant::Bats), LanguageVariant::from_path(&file_path));
+        assert_eq!(
+            Some(LanguageVariant::Bats),
+            LanguageVariant::from_path(&file_path)
+        );
     }
 }
